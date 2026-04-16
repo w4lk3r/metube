@@ -191,6 +191,8 @@ class DownloadInfo:
         subtitle_mode="prefer_manual",
         ytdl_options_presets=None,
         ytdl_options_overrides=None,
+        section_start='',
+        section_end='',
     ):
         self.id = id if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{id}'
         self.title = title if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{title}'
@@ -302,6 +304,8 @@ _PERSISTED_DOWNLOAD_FIELDS = (
     "subtitle_mode",
     "ytdl_options_presets",
     "ytdl_options_overrides",
+    "section_start",
+    "section_end",
     "status",
     "timestamp",
     "error",
@@ -877,7 +881,9 @@ class DownloadQueue:
         subtitle_mode,
         ytdl_options_presets,
         ytdl_options_overrides,
-        already,
+        section_start='',
+        section_end='',
+        already=set(),
         _add_gen=None,
     ):
         if not entry:
@@ -995,6 +1001,8 @@ class DownloadQueue:
                     subtitle_mode=subtitle_mode,
                     ytdl_options_presets=ytdl_options_presets,
                     ytdl_options_overrides=ytdl_options_overrides,
+                    section_start=section_start,
+                    section_end=section_end,
                 )
                 await self.__add_download(dl, auto_start)
             return {'status': 'ok'}
@@ -1017,6 +1025,8 @@ class DownloadQueue:
         subtitle_mode="prefer_manual",
         ytdl_options_presets=None,
         ytdl_options_overrides=None,
+        section_start='',
+        section_end='',
         already=None,
         _add_gen=None,
     ):
@@ -1077,6 +1087,8 @@ class DownloadQueue:
         subtitle_mode="prefer_manual",
         ytdl_options_presets=None,
         ytdl_options_overrides=None,
+        section_start='',
+        section_end='',
     ):
         if ytdl_options_presets is None:
             ytdl_options_presets = []

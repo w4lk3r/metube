@@ -18,6 +18,8 @@ export interface AddDownloadPayload {
   autoStart: boolean;
   splitByChapters: boolean;
   chapterTemplate: string;
+  sectionStart?: string;
+  sectionEnd?: string;
   subtitleLanguage: string;
   subtitleMode: string;
   ytdlOptionsPresets: string[];
@@ -141,6 +143,8 @@ export class DownloadsService {
       auto_start: payload.autoStart,
       split_by_chapters: payload.splitByChapters,
       chapter_template: payload.chapterTemplate,
+      section_start: payload.sectionStart || '',
+      section_end: payload.sectionEnd || '',
       subtitle_language: payload.subtitleLanguage,
       subtitle_mode: payload.subtitleMode,
       ytdl_options_presets: payload.ytdlOptionsPresets,
