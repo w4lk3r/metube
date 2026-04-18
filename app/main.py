@@ -593,6 +593,8 @@ async def add(request):
         o['subtitle_mode'],
         o['ytdl_options_presets'],
         o['ytdl_options_overrides'],
+        o['section_start'],
+        o['section_end'],
     )
     return web.Response(text=serializer.encode(status))
 
