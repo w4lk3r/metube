@@ -461,6 +461,8 @@ def parse_download_options(post: dict) -> dict:
     subtitle_language = post.get('subtitle_language')
     subtitle_mode = post.get('subtitle_mode')
     ytdl_options_overrides = post.get('ytdl_options_overrides')
+    section_start = post.get('section_start', '')
+    section_end = post.get('section_end', '')
 
     if custom_name_prefix is None:
         custom_name_prefix = ''
@@ -553,6 +555,8 @@ def parse_download_options(post: dict) -> dict:
         'subtitle_mode': subtitle_mode,
         'ytdl_options_presets': ytdl_options_presets,
         'ytdl_options_overrides': ytdl_options_overrides,
+        'section_start': section_start,
+        'section_end': section_end,
     }
 
 
@@ -589,6 +593,8 @@ async def add(request):
         o['subtitle_mode'],
         o['ytdl_options_presets'],
         o['ytdl_options_overrides'],
+        o['section_start'],
+        o['section_end'],
     )
     return web.Response(text=serializer.encode(status))
 
@@ -640,6 +646,8 @@ async def subscribe(request):
         subtitle_mode=o['subtitle_mode'],
         ytdl_options_presets=o['ytdl_options_presets'],
         ytdl_options_overrides=o['ytdl_options_overrides'],
+        section_start=o['section_start'],
+        section_end=o['section_end'],
     )
     return web.Response(text=serializer.encode(result))
 

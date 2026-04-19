@@ -80,6 +80,8 @@ export class App implements AfterViewInit, OnInit, OnDestroy {
   autoStart: boolean;
   playlistItemLimit!: number;
   splitByChapters: boolean;
+  sectionStart = '';
+  sectionEnd = '';
   chapterTemplate: string;
   subtitleLanguage: string;
   subtitleMode: string;
@@ -974,6 +976,8 @@ export class App implements AfterViewInit, OnInit, OnDestroy {
       autoStart: overrides.autoStart ?? this.autoStart,
       splitByChapters: overrides.splitByChapters ?? this.splitByChapters,
       chapterTemplate: overrides.chapterTemplate ?? this.chapterTemplate,
+      sectionStart: overrides.sectionStart ?? this.sectionStart,
+      sectionEnd: overrides.sectionEnd ?? this.sectionEnd,
       subtitleLanguage: overrides.subtitleLanguage ?? this.subtitleLanguage,
       subtitleMode: overrides.subtitleMode ?? this.subtitleMode,
       ytdlOptionsPresets: overrides.ytdlOptionsPresets ?? [...this.ytdlOptionsPresets],
@@ -985,6 +989,27 @@ export class App implements AfterViewInit, OnInit, OnDestroy {
 
   addDownload(overrides: Partial<AddDownloadPayload> = {}) {
     const payload = this.buildAddPayload(overrides);
+
+
+    if (payload.splitByChapters && (payload.sectionStart || payload.sectionEnd)) {
+      alert('Cannot use section start/end time with split by chapters');
+      return;
+    }
+
+    if ((payload.sectionStart && !payload.sectionEnd) || (!payload.sectionStart && payload.sectionEnd)) {
+      alert('Both Start Time and End Time must be provided for section download');
+      return;
+    }
+
+    const timeRegex = /^(\d+|\d{1,2}:\d{2}:\d{2})$/;
+    if (payload.sectionStart && !timeRegex.test(payload.sectionStart)) {
+      alert('Invalid Start Time format. Use seconds (e.g. 30) or HH:MM:SS (e.g. 00:01:30)');
+      return;
+    }
+    if (payload.sectionEnd && !timeRegex.test(payload.sectionEnd)) {
+      alert('Invalid End Time format. Use seconds (e.g. 30) or HH:MM:SS (e.g. 00:01:30)');
+      return;
+    }
 
     // Validate chapter template if chapter splitting is enabled
     if (payload.splitByChapters && !payload.chapterTemplate.includes('%(section_number)')) {
@@ -1047,6 +1072,8 @@ export class App implements AfterViewInit, OnInit, OnDestroy {
       autoStart: true,
       splitByChapters: download.split_by_chapters,
       chapterTemplate: download.chapter_template,
+      sectionStart: download.section_start,
+      sectionEnd: download.section_end,
       subtitleLanguage: download.subtitle_language,
       subtitleMode: download.subtitle_mode,
       ytdlOptionsPresets: download.ytdl_options_presets?.length

@@ -30,6 +30,29 @@ log = logging.getLogger('ytdl')
 _WINDOWS_INVALID_PATH_CHARS = re.compile(r'[\\:*?"<>|]')
 
 
+class DownloadRangesCallback:
+    """A pickleable callback for yt-dlp's download_ranges option.
+
+    yt-dlp requires download_ranges to be a callable with signature:
+    (info_dict, ydl) -> Iterable[Section]
+
+    Each Section is a dict with 'start_time' and 'end_time' keys (in seconds).
+    Lambda functions cannot be pickled for multiprocessing, so we use a class.
+    """
+
+    def __init__(self, section_start: str, section_end: str):
+        self.section_start = section_start
+        self.section_end = section_end
+
+    def __call__(self, info_dict, ydl):
+        return [
+            {
+                'start_time': float(self.section_start) if self.section_start else None,
+                'end_time': float(self.section_end) if self.section_end else None,
+            }
+        ]
+
+
 def _sanitize_path_component(value: Any) -> Any:
     """Replace characters that are invalid in Windows path components with '_'.
 
@@ -191,6 +214,8 @@ class DownloadInfo:
         subtitle_mode="prefer_manual",
         ytdl_options_presets=None,
         ytdl_options_overrides=None,
+        section_start='',
+        section_end='',
     ):
         self.id = id if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{id}'
         self.title = title if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{title}'
@@ -216,6 +241,8 @@ class DownloadInfo:
         self.ytdl_options_presets = list(ytdl_options_presets or [])
         self.ytdl_options_overrides = dict(ytdl_options_overrides or {})
         self.subtitle_files = []
+        self.section_start = section_start
+        self.section_end = section_end
 
     def __setstate__(self, state):
         """BACKWARD COMPATIBILITY: migrate old DownloadInfo from persistent queue files."""
@@ -283,6 +310,10 @@ class DownloadInfo:
             self.subtitle_files = []
         if not hasattr(self, "chapter_files"):
             self.chapter_files = []
+        if not hasattr(self, "section_start"):
+            self.section_start = ''
+        if not hasattr(self, "section_end"):
+            self.section_end = ''
 
 
 _PERSISTED_DOWNLOAD_FIELDS = (
@@ -302,6 +333,8 @@ _PERSISTED_DOWNLOAD_FIELDS = (
     "subtitle_mode",
     "ytdl_options_presets",
     "ytdl_options_overrides",
+    "section_start",
+    "section_end",
     "status",
     "timestamp",
     "error",
@@ -852,6 +885,11 @@ class DownloadQueue:
         if playlist_item_limit > 0:
             log.info(f'playlist limit is set. Processing only first {playlist_item_limit} entries')
             ytdl_options['playlistend'] = playlist_item_limit
+        section_start = getattr(dl, 'section_start', '') or ''
+        section_end = getattr(dl, 'section_end', '') or ''
+        if section_start or section_end:
+            ytdl_options['download_ranges'] = DownloadRangesCallback(section_start, section_end)
+            ytdl_options['force_keyframes_at_cuts'] = True
         download = Download(dldirectory, self.config.TEMP_DIR, output, output_chapter, dl.quality, dl.format, ytdl_options, dl)
         if auto_start is True:
             self.queue.put(download)
@@ -877,7 +915,9 @@ class DownloadQueue:
         subtitle_mode,
         ytdl_options_presets,
         ytdl_options_overrides,
-        already,
+        section_start='',
+        section_end='',
+        already=set(),
         _add_gen=None,
     ):
         if not entry:
@@ -911,6 +951,8 @@ class DownloadQueue:
                 subtitle_mode,
                 ytdl_options_presets,
                 ytdl_options_overrides,
+                section_start,
+                section_end,
                 already,
                 _add_gen,
             )
@@ -962,6 +1004,8 @@ class DownloadQueue:
                         subtitle_mode,
                         ytdl_options_presets,
                         ytdl_options_overrides,
+                        section_start,
+                        section_end,
                         already,
                         _add_gen,
                     )
@@ -995,6 +1039,8 @@ class DownloadQueue:
                     subtitle_mode=subtitle_mode,
                     ytdl_options_presets=ytdl_options_presets,
                     ytdl_options_overrides=ytdl_options_overrides,
+                    section_start=section_start,
+                    section_end=section_end,
                 )
                 await self.__add_download(dl, auto_start)
             return {'status': 'ok'}
@@ -1017,6 +1063,8 @@ class DownloadQueue:
         subtitle_mode="prefer_manual",
         ytdl_options_presets=None,
         ytdl_options_overrides=None,
+        section_start='',
+        section_end='',
         already=None,
         _add_gen=None,
     ):
@@ -1025,7 +1073,7 @@ class DownloadQueue:
         log.info(
             f'adding {url}: {download_type=} {codec=} {format=} {quality=} {already=} {folder=} {custom_name_prefix=} '
             f'{playlist_item_limit=} {auto_start=} {split_by_chapters=} {chapter_template=} '
-            f'{subtitle_language=} {subtitle_mode=} {ytdl_options_presets=}'
+            f'{subtitle_language=} {subtitle_mode=} {ytdl_options_presets=} {section_start=} {section_end=}'
         )
         if already is None:
             _add_gen = self._add_generation
@@ -1056,6 +1104,8 @@ class DownloadQueue:
             subtitle_mode,
             ytdl_options_presets,
             ytdl_options_overrides,
+            section_start,
+            section_end,
             already,
             _add_gen,
         )
@@ -1077,6 +1127,8 @@ class DownloadQueue:
         subtitle_mode="prefer_manual",
         ytdl_options_presets=None,
         ytdl_options_overrides=None,
+        section_start='',
+        section_end='',
     ):
         if ytdl_options_presets is None:
             ytdl_options_presets = []
@@ -1098,6 +1150,8 @@ class DownloadQueue:
             subtitle_mode,
             ytdl_options_presets,
             ytdl_options_overrides,
+            section_start,
+            section_end,
             already,
             None,
         )
