@@ -3,8 +3,8 @@ FROM node:lts-alpine AS builder
 WORKDIR /metube
 COPY ui ./
 RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN pnpm config set side-effects-cache false && \
-    pnpm config set only-allow-built-dependencies-from -[]
+RUN echo "side-effects-cache=false" >> .npmrc && \
+    echo "only-allow-built-dependencies-from=[]" >> .npmrc
 RUN CI=true pnpm install --frozen-lockfile && pnpm run build
 
 FROM python:3.13-slim
