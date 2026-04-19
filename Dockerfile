@@ -2,9 +2,10 @@ FROM node:lts-alpine AS builder
 
 WORKDIR /metube
 COPY ui ./
-RUN corepack enable && corepack prepare pnpm --activate
-RUN CI=true pnpm install --no-frozen-lockfile && pnpm run build
-
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm config set side-effects-cache false && \
+    pnpm config set only-allow-built-dependencies-from -[]
+RUN CI=true pnpm install --frozen-lockfile && pnpm run build
 
 FROM python:3.13-slim
 
