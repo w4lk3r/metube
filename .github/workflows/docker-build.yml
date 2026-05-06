@@ -47,6 +47,9 @@ jobs:
           # 同时构建 amd64 (普通电脑) 和 arm64 (苹果芯片/部分服务器)
           platforms: linux/amd64,linux/arm64
           push: true
+          # 传入版本号给 Dockerfile (如果你需要的话)
+          build-args: |
+            VERSION=${{ steps.vars.outputs.tag }}
           # 同时打上 latest 和 具体的日期版本 标签
           tags: |
             ghcr.io/${{ github.repository }}:latest
