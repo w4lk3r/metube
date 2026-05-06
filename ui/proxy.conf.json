@@ -1,0 +1,63 @@
+{
+  "/socket.io": {
+    "target": "http://localhost:8081",
+    "ws": true,
+    "changeOrigin": true
+  },
+  "/download": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/audio_download": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/add": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/presets": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/cancel-add": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/subscribe": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/subscriptions": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/delete": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/start": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/upload-cookies": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/delete-cookies": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/cookie-status": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/history": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  },
+  "/version": {
+    "target": "http://localhost:8081",
+    "changeOrigin": true
+  }
+}
